@@ -63,6 +63,7 @@ class ElevatorViewSet(viewsets.ModelViewSet):
     def mark_maintenance(self, request, pk=None):
         '''
             Marks an elevator as inoperational or operational depending upon the input provided.
+            All the requests are marked as fulfilled as a request is fulfilled instantly as mentioned in the problem statement.
         '''
         try:
             elevator = self.get_object()
@@ -72,6 +73,7 @@ class ElevatorViewSet(viewsets.ModelViewSet):
                 return Response({'error': 'is_maintenance parameter is missing.'}, status=400)
 
             # Update the maintenance status of the elevator
+            elevator.requests.filter(is_fulfilled=False).update(is_fulfilled=True)
             elevator.is_operational = not is_maintenance
             elevator.save()
 
