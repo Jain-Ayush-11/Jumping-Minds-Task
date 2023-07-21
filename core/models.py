@@ -1,6 +1,10 @@
 from django.db import models
 
+class ElevatorSystem(models.Model):
+    pass
+
 class Elevator(models.Model):
+    elevator_system = models.ForeignKey(ElevatorSystem, on_delete=models.CASCADE)
     is_operational = models.BooleanField(default=True)
     current_floor = models.PositiveIntegerField(default=1)
     next_floor = models.PositiveIntegerField(default=1)

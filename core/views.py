@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from .models import Elevator, UserRequest
+from .models import Elevator, UserRequest, ElevatorSystem
 from .serializers import ElevatorSerializer, UserRequestSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -13,9 +13,16 @@ class ElevatorViewSet(viewsets.ModelViewSet):
         num_elevators = request.data.get('num_elevators')
         if num_elevators is None or not isinstance(num_elevators, int) or num_elevators <= 0:
             return Response({'error': 'Invalid number of elevators. Please provide a positive integer.'}, status=400)
+        
+        if ElevatorSystem.objects.all().count() > 0:
+            return Response({'error': 'No more than one system can be initialized at a time'}, status=400)
+
+        system = ElevatorSystem.objects.create()
 
         for i in range(num_elevators):
-            Elevator.objects.create()
+            Elevator.objects.create(
+                elevator_system = system
+            )
 
         return Response({'message': f'{num_elevators} elevators have been initialized.'}, status=201)
 
