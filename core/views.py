@@ -10,6 +10,11 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def initialize(self, request):
+        '''
+            Initializes an Elevator System with provided number of elevators.
+            No more than One system can exist at a time.
+            By default, all elevators are initially at Floor 1.
+        '''
         num_elevators = request.data.get('num_elevators')
         if num_elevators is None or not isinstance(num_elevators, int) or num_elevators <= 0:
             return Response({'error': 'Invalid number of elevators. Please provide a positive integer.'}, status=400)
@@ -28,6 +33,9 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def get_current_floor(self, request, *args, **kwargs):
+        '''
+            Returns the Current Floor Elevator is On.
+        '''
         try:
             elevator = self.get_object()
             current_floor = elevator.current_floor
@@ -38,6 +46,9 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def direction(self, request, pk=None):
+        '''
+            Provides the direction elevator is moving or if it is stopped.
+        '''
         try:
             elevator = self.get_object()
             if elevator.is_moving_up:
@@ -50,6 +61,9 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def mark_maintenance(self, request, pk=None):
+        '''
+            Marks an elevator as inoperational or operational depending upon the input provided.
+        '''
         try:
             elevator = self.get_object()
             is_maintenance = request.data.get('is_maintenance')
@@ -68,6 +82,10 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def door_status(self, request, pk=None, door=None):
+        '''
+            Updates and returns the status of door on the bases of door variable input.
+            If door is not equal to 0, marks as door open. Else, as door closed.
+        '''
         try:
             elevator = self.get_object()
             if door: elevator.is_door_open = True
@@ -81,6 +99,14 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def save_user_request(self, request):
+        '''
+            Creates user request from a floor to a list of floor on the basis of priority.
+            The best elevator are selected using the defined method (See them for their logic).
+            Updates an eleavtors current floor as the floor eleavtor is called from.
+            Next Destination for an eleavtor is updated as the first request elevator will fulfill.
+            Last Floor is updated as the last request elevator will fulfill.
+            Order of request fulfillment is decided using a priority method defined.
+        '''
         from_floor = request.data.get('from_floor')
         to_floor_list = request.data.get('to_floor', '')
 
@@ -133,10 +159,11 @@ class ElevatorViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_optimal_elevator(self, from_floor, to_floor_list):
+        '''
+            Returns the most optimal elevator based on the list floor elevator is called from.
+            Returns the elevator which will be closest after it fulfills its last request.
+        '''
         elevators = Elevator.objects.filter(is_operational=True)
-
-        if elevators.filter(is_moving_up=False, is_moving_down=False).exists():
-            return elevators.filter(is_moving_up=False, is_moving_down=False).first()
 
         optimal_elevator = elevators[0]
         closest_distance = abs(elevators[0].last_floor-from_floor)
@@ -150,7 +177,12 @@ class ElevatorViewSet(viewsets.ModelViewSet):
         return optimal_elevator
 
     def calculate_priority(self, elevator, from_floor, to_floor_list):
-
+        '''
+            Method to determine the order in which requests will be fulfilled.
+            Assigns a priority to each method.
+            Higher number implies higher priority, while lower number implies a low priority.
+            Hence, request with priority 1 will be the fulfilled last.
+        '''
         temp_list = [(1 if x-from_floor>0 else -1) for x in to_floor_list]
         direction = sum(temp_list)
         priority_list = list()
@@ -176,6 +208,9 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def next_destination(self, request, pk=None):
+        '''
+            Returns the next destination of an elevator.
+        '''
         try:
             elevator = self.get_object()
             return Response({'next_destination': elevator.next_floor}, status=status.HTTP_200_OK)
@@ -185,6 +220,9 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def stop_elevator(self, request, pk=None):
+        '''
+            Stops an elevator.
+        '''
         try:
             elevator = self.get_object()
             elevator.is_moving_up = False
@@ -198,6 +236,9 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def direction(self, request, pk=None):
+        '''
+            Returns if an elevator is moving up, down or is stopped.
+        '''
         try:
             elevator = self.get_object()
             if elevator.is_moving_up:
@@ -214,6 +255,11 @@ class UserRequestViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def fetch_user_requests(self, request, pk=None, is_fulfilled=None):
+        '''
+            Returns User Requests for an elevator based on user input in url parameter.
+            If only the active user requests are needed, any positive integer needs to be passed int the url.
+            Else, on passing 0 or simply not passing any parameter, all the request associated to the elevator are returned.
+        '''
         try:
             elevator = Elevator.objects.get(pk=pk)
             if is_fulfilled:
