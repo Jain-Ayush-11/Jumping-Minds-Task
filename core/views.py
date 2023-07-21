@@ -53,22 +53,11 @@ class ElevatorViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Elevator not found.'}, status=404)
 
     @action(detail=True, methods=['post'])
-    def open_door(self, request, pk=None):
+    def door_status(self, request, pk=None, door=None):
         try:
             elevator = self.get_object()
-            elevator.is_door_open = True
-            elevator.save()
-
-            serializer = ElevatorSerializer(elevator)
-            return Response(serializer.data, status=200)
-        except Elevator.DoesNotExist:
-            return Response({'error': 'Elevator not found.'}, status=404)
-
-    @action(detail=True, methods=['post'])
-    def close_door(self, request, pk=None):
-        try:
-            elevator = self.get_object()
-            elevator.is_door_open = False
+            if door: elevator.is_door_open = True
+            else: elevator.is_door_open = False
             elevator.save()
 
             serializer = ElevatorSerializer(elevator)
