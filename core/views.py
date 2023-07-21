@@ -89,20 +89,13 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
         to_floor_list.sort()
         elevator = self.get_optimal_elevator(from_floor, to_floor_list)
+        UserRequest.objects.filter(elevator=elevator, is_fulfilled=False).update(is_fulfilled=True)
         priority_list = self.calculate_priority(elevator, from_floor, to_floor_list)
 
-        first_to_floor = to_floor_list[0]
-        if from_floor < first_to_floor:
-            elevator.is_moving_up = True
-            elevator.is_moving_down = False
-        else:
-            elevator.is_moving_up = False
-            elevator.is_moving_down = True
-
-        elevator.save()
-
+        highest_priority = priority_list[0][1]
+        temp_first_floor = priority_list[0][0]
         least_priority = priority_list[0][1]
-        temp_current_floor = priority_list[0][0]
+        temp_last_floor = priority_list[0][0]
 
         user_requests = []
         for item in priority_list:
@@ -113,11 +106,23 @@ class ElevatorViewSet(viewsets.ModelViewSet):
                 priority=item[1]
             )
             user_requests.append(user_request)
+            if item[1]>highest_priority:
+                highest_priority = item[1]
+                temp_first_floor = item[0]
             if item[1]<least_priority:
                 least_priority = item[1]
-                temp_current_floor = item[0]
+                temp_last_floor = item[0]
 
-        elevator.current_floor = temp_current_floor
+        if from_floor < temp_first_floor:
+            elevator.is_moving_up = True
+            elevator.is_moving_down = False
+        else:
+            elevator.is_moving_up = False
+            elevator.is_moving_down = True
+
+        elevator.current_floor = from_floor
+        elevator.next_floor = temp_first_floor
+        elevator.last_floor = temp_last_floor
         elevator.save()
 
         serializer = UserRequestSerializer(user_requests, many=True)
@@ -131,10 +136,10 @@ class ElevatorViewSet(viewsets.ModelViewSet):
             return elevators.filter(is_moving_up=False, is_moving_down=False).first()
 
         optimal_elevator = elevators[0]
-        closest_distance = abs(elevators[0].current_floor-from_floor)
+        closest_distance = abs(elevators[0].last_floor-from_floor)
 
         for elevator in elevators:
-            temp_distance = abs(elevator.current_floor-from_floor)
+            temp_distance = abs(elevator.last_floor-from_floor)
             if temp_distance<closest_distance:
                 optimal_elevator = elevator
                 closest_distance = temp_distance
@@ -165,17 +170,29 @@ class ElevatorViewSet(viewsets.ModelViewSet):
                     priority_list.append((to_floor_list[i], p))
                     p+=1
         return priority_list
+
+    @action(detail=True, methods=['get'])
+    def next_destination(self, request, pk=None):
+        try:
+            elevator = self.get_object()
+            return Response({'next_destination': elevator.next_floor}, status=status.HTTP_200_OK)
+
+        except Elevator.DoesNotExist:
+            return Response({'error': 'Elevator not found.'}, status=status.HTTP_404_NOT_FOUND)
+
    
 class UserRequestViewSet(viewsets.ModelViewSet):
     queryset = UserRequest.objects.all()
     serializer_class = UserRequestSerializer
 
-
     @action(detail=True, methods=['get'])
-    def fetch_user_requests(self, request, pk=None):
+    def fetch_user_requests(self, request, pk=None, is_fulfilled=None):
         try:
             elevator = Elevator.objects.get(pk=pk)
-            user_requests = elevator.requests.all()
+            if is_fulfilled:
+                user_requests = elevator.requests.filter(is_fulfilled=False)
+            else:
+                user_requests = elevator.requests.all()
             serializer = UserRequestSerializer(user_requests, many=True)
             return Response(serializer.data)
         except Elevator.DoesNotExist:
