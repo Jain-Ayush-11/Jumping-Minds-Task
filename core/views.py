@@ -76,8 +76,107 @@ class ElevatorViewSet(viewsets.ModelViewSet):
         except Elevator.DoesNotExist:
             return Response({'error': 'Elevator not found.'}, status=404)
 
+    @action(detail=False, methods=['post'])
+    def save_user_request(self, request):
+        from_floor = request.data.get('from_floor')
+        to_floor_list = request.data.get('to_floor', '')
+
+        if from_floor is None:
+            return Response({'error': 'from_floor parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not to_floor_list:
+            return Response({'error': 'At least one valid to_floor parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        to_floor_list.sort()
+        elevator = self.get_optimal_elevator(from_floor, to_floor_list)
+        priority_list = self.calculate_priority(elevator, from_floor, to_floor_list)
+
+        first_to_floor = to_floor_list[0]
+        if from_floor < first_to_floor:
+            elevator.is_moving_up = True
+            elevator.is_moving_down = False
+        else:
+            elevator.is_moving_up = False
+            elevator.is_moving_down = True
+
+        elevator.save()
+
+        least_priority = priority_list[0][1]
+        temp_current_floor = priority_list[0][0]
+
+        user_requests = []
+        for item in priority_list:
+            user_request, _ = UserRequest.objects.get_or_create(
+                elevator=elevator,
+                from_floor=from_floor,
+                to_floor=item[0],
+                priority=item[1]
+            )
+            user_requests.append(user_request)
+            if item[1]<least_priority:
+                least_priority = item[1]
+                temp_current_floor = item[0]
+
+        elevator.current_floor = temp_current_floor
+        elevator.save()
+
+        serializer = UserRequestSerializer(user_requests, many=True)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get_optimal_elevator(self, from_floor, to_floor_list):
+        elevators = Elevator.objects.filter(is_operational=True)
+
+        if elevators.filter(is_moving_up=False, is_moving_down=False).exists():
+            return elevators.filter(is_moving_up=False, is_moving_down=False).first()
+
+        optimal_elevator = elevators[0]
+        closest_distance = abs(elevators[0].current_floor-from_floor)
+
+        for elevator in elevators:
+            temp_distance = abs(elevator.current_floor-from_floor)
+            if temp_distance<closest_distance:
+                optimal_elevator = elevator
+                closest_distance = temp_distance
+
+        return optimal_elevator
+
+    def calculate_priority(self, elevator, from_floor, to_floor_list):
+
+        temp_list = [(1 if x-from_floor>0 else -1) for x in to_floor_list]
+        direction = sum(temp_list)
+        priority_list = list()
+        highest_priority = len(to_floor_list)
+        p = 1
+        if direction>0:
+            for i in range(len(to_floor_list)):
+                if to_floor_list[i]<from_floor:
+                    priority_list.append((to_floor_list[i], p))
+                    p+=1
+                else:
+                    priority_list.append((to_floor_list[i], highest_priority))
+                    highest_priority-=1
+        else:
+            for i in range(len(to_floor_list)):
+                if to_floor_list[i]>=from_floor:
+                    priority_list.append((to_floor_list[i], highest_priority))
+                    highest_priority-=1
+                else:
+                    priority_list.append((to_floor_list[i], p))
+                    p+=1
+        return priority_list
    
 class UserRequestViewSet(viewsets.ModelViewSet):
     queryset = UserRequest.objects.all()
     serializer_class = UserRequestSerializer
 
+
+    @action(detail=True, methods=['get'])
+    def fetch_user_requests(self, request, pk=None):
+        try:
+            elevator = Elevator.objects.get(pk=pk)
+            user_requests = elevator.requests.all()
+            serializer = UserRequestSerializer(user_requests, many=True)
+            return Response(serializer.data)
+        except Elevator.DoesNotExist:
+            return Response({'error': 'Elevator not found.'}, status=404)
