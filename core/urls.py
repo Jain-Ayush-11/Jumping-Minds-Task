@@ -11,4 +11,6 @@ urlpatterns = [
     path('elevators/<int:pk>/fetch-user-requests/', UserRequestViewSet.as_view({'get': 'fetch_user_requests'}), name='fetch_user_requests'),
     path('elevators/<int:pk>/fetch-user-requests/<int:is_fulfilled>/', UserRequestViewSet.as_view({'get': 'fetch_user_requests'}), name='fetch_user_requests'),
     path('elevators/<int:pk>/next-destination/', ElevatorViewSet.as_view({'get': 'next_destination'}), name='next_destination'),
+    path('elevators/<int:pk>/direction/', ElevatorViewSet.as_view({'get': 'direction'}), name='elevator-direction'),
+    path('elevators/<int:pk>/stop/', ElevatorViewSet.as_view({'post': 'stop_elevator'}), name='elevator-stop'),
 ]
