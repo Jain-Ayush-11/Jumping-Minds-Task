@@ -18,5 +18,4 @@ class UserRequest(models.Model):
     from_floor = models.PositiveIntegerField()
     is_fulfilled = models.BooleanField(default=False)
     to_floor = models.PositiveIntegerField()
-    requested_time = models.DateTimeField(auto_now_add=True)
     priority = models.PositiveIntegerField(default=0)
