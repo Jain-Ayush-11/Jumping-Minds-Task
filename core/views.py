@@ -37,9 +37,16 @@ class ElevatorViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Elevator not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=True, methods=['get'])
-    def is_moving_up(self, request, pk=None):
-        elevator = self.get_object()
-        return Response({'is_moving_up': elevator.is_moving_up})
+    def direction(self, request, pk=None):
+        try:
+            elevator = self.get_object()
+            if elevator.is_moving_up:
+                return Response({'message':'Eleavtor is moving up'})
+            elif elevator.is_moving_down:
+                return Response({'message':'Eleavtor is moving down'})
+            return Response({'message':'Eleavtor is stopped'})
+        except Elevator.DoesNotExist:
+            return Response({'error': 'Elevator not found.'}, status=404)
 
     @action(detail=True, methods=['post'])
     def mark_maintenance(self, request, pk=None):
