@@ -75,6 +75,8 @@ class ElevatorViewSet(viewsets.ModelViewSet):
             # Update the maintenance status of the elevator
             elevator.requests.filter(is_fulfilled=False).update(is_fulfilled=True)
             elevator.is_operational = not is_maintenance
+            elevator.is_moving_up = False
+            elevator.is_moving_down = False
             elevator.save()
 
             serializer = ElevatorSerializer(elevator)
@@ -130,7 +132,7 @@ class ElevatorViewSet(viewsets.ModelViewSet):
 
         user_requests = []
         for item in priority_list:
-            user_request, _ = UserRequest.objects.get_or_create(
+            user_request = UserRequest.objects.create(
                 elevator=elevator,
                 from_floor=from_floor,
                 to_floor=item[0],
@@ -215,6 +217,8 @@ class ElevatorViewSet(viewsets.ModelViewSet):
         '''
         try:
             elevator = self.get_object()
+            if not elevator.is_operational:
+                return Response({'message':'Elevator is currently under maintainance'}, status=status.HTTP_200_OK)
             return Response({'next_destination': elevator.next_floor}, status=status.HTTP_200_OK)
 
         except Elevator.DoesNotExist:
