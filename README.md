@@ -1,17 +1,20 @@
 # Elevator System
 ## Initialization
+Only One Elevator System with an input number of elevators can be initialized at a time.<br>
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/f7ac1141-49ca-4272-a6b4-69b6547df9f6)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/3f14c411-a443-43f6-a6f5-29b2fa25f356)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/952d298c-0e29-4166-873e-fe6aef2b4a72)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/23c55c35-ce64-4f04-b34b-6865ac77b8d3)
 
 ## Open/Close Door
+Changes the status of the Door based on the URL parameter.<br>
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/9d3a5c62-d59d-4348-870d-7bceb98237d7)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/f68085ef-e50d-4bcf-9a9f-7977e6370952)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/abaeb3fa-6291-4d96-b9b5-1fab3c1e4729)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/5b2912af-0562-47b0-b539-f8d5e4cc1385)
 
 ## Current Floor of an Elevator
+Returns the Floor Elevator is currently on.<br>
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/3cab623c-7564-4391-8cc6-e117e1319d24)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/83b00081-c5fa-4f38-bfa2-111c34bb7c9d)
 
@@ -22,6 +25,11 @@
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/3c76c027-7284-4686-86d1-82b8bdda3da2)
 
 ## Making User Requests
+On the basis of the list of requests from a floor, chooses the optimal elevator closest to the floor elevator is called from. <br>
+Creates a user request for every to_floor value and assigns it a priority for the chosen elevator based on the number of requests for up and down.<br>
+Updates the current floor for an elevator as the floor elevator is called from. <br>
+Updates the next destination as the floor in the request which elevator will fulfill first. <br>
+Every time New Requests for an elevator come, all the previous ones are marked as fulfilled considering instant fulfillment.<br>
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/398975af-7075-47bf-b6af-ae45a35febe0)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/7575cfdf-598b-49dd-9032-2686087ac2d6)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/d210209a-464e-4579-93e1-23828d88a66f)
