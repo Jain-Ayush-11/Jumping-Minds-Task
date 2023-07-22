@@ -34,3 +34,13 @@
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/29d9dfa8-57b2-480e-9094-074e4c8eaac2)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/4458f4b1-f98e-45a9-ad78-420176d3d9b8)
 ![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/3828cf57-df02-4aa2-8df3-8804efffdc8e)
+
+# Next Destination of Elevator
+![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/3d906ee2-ebfe-41f6-80e4-fab5becf3859)
+
+# Elevator Direction
+![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/e0bab637-2b42-4fd7-bf8b-1fa67a84f4b3)
+![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/750b9efc-716d-4b9f-8908-550dcb770444)
+
+# Stopping Elevator
+![image](https://github.com/Jain-Ayush-11/Jumping-Minds-Task/assets/76158814/975a99a7-2d5c-4e72-8690-155ae7dc4f98)
